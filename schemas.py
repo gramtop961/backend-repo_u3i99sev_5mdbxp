@@ -2,47 +2,46 @@
 Database Schemas
 
 Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
 Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Class name lowercased becomes the collection name.
+
+Example: class Post(BaseModel) -> collection "post"
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, HttpUrl
+from typing import List, Optional
+from datetime import datetime
 
-# Example schemas (replace with your own):
 
-class User(BaseModel):
+class Post(BaseModel):
     """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
+    Blog posts about Batam's hidden gems, cafes, guides, etc.
+    Collection name: "post"
     """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    title: str = Field(..., description="Post title")
+    slug: str = Field(..., description="URL-friendly unique slug")
+    excerpt: Optional[str] = Field(None, description="Short summary for cards and SEO")
+    content: Optional[str] = Field(None, description="Rich text/markdown content")
+    cover_image: Optional[HttpUrl] = Field(None, description="Hero/cover image URL")
+    tags: List[str] = Field(default_factory=list, description="Topic tags like cafe, guide, hidden-gem")
+    area: Optional[str] = Field(None, description="Neighborhood/area e.g., Barelang, Nagoya")
+    published: bool = Field(default=True, description="Whether visible on site")
+    published_at: Optional[datetime] = Field(None, description="Publish timestamp")
 
-class Product(BaseModel):
+
+class Project(BaseModel):
     """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
+    Portfolio / curation projects and brand features.
+    Collection name: "project"
     """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+    title: str = Field(..., description="Project title")
+    slug: str = Field(..., description="URL-friendly unique slug")
+    summary: Optional[str] = Field(None, description="Short description for cards")
+    images: List[HttpUrl] = Field(default_factory=list, description="Image gallery URLs")
+    client: Optional[str] = Field(None, description="Client or brand name")
+    year: Optional[int] = Field(None, description="Year of project")
+    category: Optional[str] = Field(None, description="Type e.g., editorial, branding, curation")
+    featured: bool = Field(default=False, description="Whether to highlight on home")
 
-# Add your own schemas here:
-# --------------------------------------------------
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+# You can add more collections later (e.g., place, stay, dine) following the same pattern.
